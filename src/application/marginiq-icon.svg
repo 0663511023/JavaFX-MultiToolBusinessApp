@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="0.55" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#065f46"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- rounded tile -->
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="240" rx="116" fill="url(#shine)"/>
+  <!-- three rising bars: cost, VAT and profit -->
+  <rect x="112" y="300" width="72" height="104" rx="18" fill="#ffffff" fill-opacity="0.55"/>
+  <rect x="220" y="244" width="72" height="160" rx="18" fill="#ffffff" fill-opacity="0.78"/>
+  <rect x="328" y="176" width="72" height="228" rx="18" fill="#ffffff"/>
+  <!-- margin arrow climbing over the bars -->
+  <path d="M 124 226 L 226 170 L 282 196 L 372 118" fill="none" stroke="#ecfdf5" stroke-width="26"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 340 104 L 384 104 L 384 148" fill="none" stroke="#ecfdf5" stroke-width="26"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
