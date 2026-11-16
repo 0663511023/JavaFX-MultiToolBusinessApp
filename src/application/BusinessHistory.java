@@ -1019,19 +1019,24 @@ public class BusinessHistory {
         SAVER.execute(() -> writeHistoryFile(snapshot));
     }
 
-    /** Writes the whole history to the database in one transaction. Skipped when the history was not read. */
+    /**
+     * Writes the whole history to the database in one transaction. The check and the write happen under the lock that a
+     * restore holds while it swaps the database file, so a save can never reopen a database that is being replaced.
+     * A save is skipped while the history is not ready: it was never read, or a restore is under way and the screens
+     * will read it again. The reason for the first case was already reported when the history was read.
+     */
     private static void writeHistoryFile(List<String> lines) {
-        if (!storageReady) {
-            Notices.addOnce("history-save", "The calculation history was not saved, because it could not be read from "
-                    + "the database. Press Refresh (F5), or restart MarginIQ Suite.");
-            return;
-        }
-        try {
-            AppDatabase.get().replaceHistory(lines);
-            Notices.clearOnce("history-save");
-        } catch (SQLException | RuntimeException ex) {
-            Notices.addOnce("history-save", "The calculation history could not be saved to the database, so your latest "
-                    + "changes may not be kept. (" + ex.getMessage() + ")");
+        synchronized (AppDatabase.class) {
+            if (!storageReady) {
+                return;
+            }
+            try {
+                AppDatabase.get().replaceHistory(lines);
+                Notices.clearOnce("history-save");
+            } catch (SQLException | RuntimeException ex) {
+                Notices.addOnce("history-save", "The calculation history could not be saved to the database, so your latest "
+                        + "changes may not be kept. (" + ex.getMessage() + ")");
+            }
         }
     }
 

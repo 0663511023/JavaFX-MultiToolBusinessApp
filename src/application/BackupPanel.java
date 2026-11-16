@@ -266,29 +266,32 @@ final class BackupPanel {
             }
             throw ex;
         }
-        // The database is closed first, so its file can be moved aside and replaced
-        AppDatabase.close();
-        ClientStore.forget();
-        // Nothing saves over the restored database until every screen has read it again (see DataRefresh)
-        BusinessHistory.forgetStorage();
-        PinStore.forgetStorage();
-        String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-        // The database and its journal files are moved aside together, so no journal is left to damage the restored copy.
-        // Files from an older backup are moved aside too, and are brought across when the database is next opened.
-        java.util.Set<String> replaced = new java.util.LinkedHashSet<>(files.keySet());
-        replaced.add(BackupArchive.DATABASE_NAME);
-        replaced.add(BackupArchive.DATABASE_NAME + "-wal");
-        replaced.add(BackupArchive.DATABASE_NAME + "-shm");
-        replaced.add(BackupArchive.DATABASE_NAME + "-journal");
-        for (String name : replaced) {
-            Path current = home.resolve(name);
-            if (Files.exists(current)) {
-                Files.move(current, home.resolve(name + ".before-restore-" + stamp),
-                        StandardCopyOption.REPLACE_EXISTING);
+        // Held for the whole swap, so a background history save cannot reopen the database while its file is replaced
+        synchronized (AppDatabase.class) {
+            // The database is closed first, so its file can be moved aside and replaced
+            AppDatabase.close();
+            ClientStore.forget();
+            // Nothing saves over the restored database until every screen has read it again (see DataRefresh)
+            BusinessHistory.forgetStorage();
+            PinStore.forgetStorage();
+            String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            // The database and its journal files are moved aside together, so no journal is left to damage the restored copy.
+            // Files from an older backup are moved aside too, and are brought across when the database is next opened.
+            java.util.Set<String> replaced = new java.util.LinkedHashSet<>(files.keySet());
+            replaced.add(BackupArchive.DATABASE_NAME);
+            replaced.add(BackupArchive.DATABASE_NAME + "-wal");
+            replaced.add(BackupArchive.DATABASE_NAME + "-shm");
+            replaced.add(BackupArchive.DATABASE_NAME + "-journal");
+            for (String name : replaced) {
+                Path current = home.resolve(name);
+                if (Files.exists(current)) {
+                    Files.move(current, home.resolve(name + ".before-restore-" + stamp),
+                            StandardCopyOption.REPLACE_EXISTING);
+                }
             }
-        }
-        for (Map.Entry<String, Path> entry : staged.entrySet()) {
-            Files.move(entry.getValue(), home.resolve(entry.getKey()), StandardCopyOption.REPLACE_EXISTING);
+            for (Map.Entry<String, Path> entry : staged.entrySet()) {
+                Files.move(entry.getValue(), home.resolve(entry.getKey()), StandardCopyOption.REPLACE_EXISTING);
+            }
         }
     }
 

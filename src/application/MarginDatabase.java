@@ -759,8 +759,11 @@ public final class MarginDatabase implements AutoCloseable {
         });
     }
 
-    /** Every archived history line, in the order they were archived. */
-    public synchronized List<String> archivedLines() throws SQLException {
+    /**
+     * Every archived history line, in the order they were archived. No screen shows the archive yet; this reads it for
+     * the import check, which confirms the archive came across in order.
+     */
+    synchronized List<String> archivedLines() throws SQLException {
         List<String> list = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement("SELECT line FROM history_archive ORDER BY id");
              ResultSet rs = ps.executeQuery()) {
